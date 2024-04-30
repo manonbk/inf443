@@ -12,13 +12,83 @@ void deform_terrain(mesh& m)
 		float d2 = p.x*p.x + p.y * p.y;
 		float z = exp(-d2 / 4)-1;
 
-		z = z + 0.05f*noise_perlin({ p.x,p.y });
+		z = z + 0.55f*noise_perlin({ p.x,p.y })-0.5f;
 
 		p = { p.x, p.y, z };
 	}
 
 	m.normal_update();
 }
+
+float evaluate_terrain_height(float x, float y)
+{
+    vec2 p_i[4] = { {-10,-10}, {5,5}, {-3,4}, {6,4} };
+    float h_i[4] = {3.0f, -1.5f, 1.0f, 2.0f};
+    float sigma_i[4] = {10.0f, 3.0f, 4.0f, 4.0f};
+
+    float z = 0;
+
+    for (int i =0; i<4; i++) {
+        float d = norm(vec2(x, y) - p_i[i]) / sigma_i[i];
+        z += h_i[i]*std::exp(-d * d);
+
+    }
+	z = z + 0.5f*noise_perlin({x,y})-0.5f;
+
+    return z;
+}
+
+mesh create_terrain_mesh(int N, float terrain_length)
+{
+
+    mesh terrain; // temporary terrain storage (CPU only)
+    terrain.position.resize(N*N);
+    terrain.uv.resize(N*N);
+
+    // Fill terrain geometry
+    for(int ku=0; ku<N; ++ku)
+    {
+        for(int kv=0; kv<N; ++kv)
+        {
+            // Compute local parametric coordinates (u,v) \in [0,1]
+            float u = ku/(N-1.0f);
+            float v = kv/(N-1.0f);
+
+            // Compute the real coordinates (x,y) of the terrain in [-terrain_length/2, +terrain_length/2]
+            float x = (u - 0.5f) * terrain_length;
+            float y = (v - 0.5f) * terrain_length;
+
+            // Compute the surface height function at the given sampled coordinate
+            float z = evaluate_terrain_height(x,y);
+
+            // Store vertex coordinates
+            terrain.position[kv+N*ku] = {x,y,z};
+            terrain.uv[kv+N*ku] = {u*5,v*5};
+        }
+    }
+
+    // Generate triangle organization
+    //  Parametric surface with uniform grid sampling: generate 2 triangles for each grid cell
+    for(int ku=0; ku<N-1; ++ku)
+    {
+        for(int kv=0; kv<N-1; ++kv)
+        {
+            unsigned int idx = kv + N*ku; // current vertex offset
+
+            uint3 triangle_1 = {idx, idx+1+N, idx+1};
+            uint3 triangle_2 = {idx, idx+N, idx+1+N};
+
+            terrain.connectivity.push_back(triangle_1);
+            terrain.connectivity.push_back(triangle_2);
+        }
+    }
+
+    // need to call this function to fill the other buffer with default values (normal, color, etc)
+	terrain.fill_empty_field(); 
+
+    return terrain;
+}
+
 
 // This function is called only once at the beginning of the program
 // This function can contain any complex operation that can be pre-computed once
@@ -44,11 +114,17 @@ void scene_structure::initialize()
 	// Create the shapes seen in the 3D scene
 	// ********************************************** //
 
-	float L = 5.0f;
+	float L = 3.0f;
 	mesh terrain_mesh = mesh_primitive_grid({ -L,-L,0 }, { L,-L,0 }, { L,L,0 }, { -L,L,0 }, 100, 100);
 	deform_terrain(terrain_mesh);
+	//mesh terrain_mesh = create_terrain_mesh(100,L);
 	terrain.initialize_data_on_gpu(terrain_mesh);
 	terrain.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sand.jpg");
+
+	mesh terrain_mesh_2 = mesh_primitive_grid({ -L+4.0f,-L+4.0f,0 }, { L+4.0f,-L+4.0f,0 }, { L+4.0f,L+4.0f,0 }, { -L+4.0f,L+4.0f,0 }, 100, 100);
+	deform_terrain(terrain_mesh_2);
+	terrain2.initialize_data_on_gpu(terrain_mesh_2);
+	terrain2.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sand.jpg");
 
 	float sea_w = 8.0;
 	float sea_z = -0.8f;
@@ -87,6 +163,7 @@ void scene_structure::display_frame()
 
 	// Draw all the shapes
 	draw(terrain, environment);
+	draw(terrain2,environment);
 	draw(water, environment);
 	draw(tree, environment);
 	draw(cube1, environment);

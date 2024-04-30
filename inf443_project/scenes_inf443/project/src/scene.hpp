@@ -17,6 +17,7 @@ struct gui_parameters {
 	bool display_wireframe = false;
 };
 
+
 // The structure of the custom scene
 struct scene_structure : cgp::scene_inputs_generic {
 	
@@ -39,6 +40,7 @@ struct scene_structure : cgp::scene_inputs_generic {
 	timer_basic timer;
 
 	mesh_drawable terrain;
+	mesh_drawable terrain2;
 	mesh_drawable water;
 	mesh_drawable tree;
 	mesh_drawable cube1;
