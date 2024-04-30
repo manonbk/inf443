@@ -66,6 +66,20 @@ void scene_structure::initialize()
 
 	cube2 = cube1;
 
+	
+	// Create two quads to display the blades of grass as impostors
+	mesh quad = mesh_primitive_quadrangle({ -0.5f,0.0f,0.0f }, { 0.5f,0.0f,0.0f }, { 0.5f,0.0f,1.0f }, { -0.5f,0.0f,1.0f });
+	mesh quad2 = mesh_primitive_quadrangle({0.0f,-0.5f,0.0f}, {0.0f,0.5f,0.0f}, {0.0f,0.5f,1.0f}, {0.0f,-0.5f,1.0f}); // second quad is orthogonal to the first one
+	quad.push_back(quad2);
+	grass.initialize_data_on_gpu(quad);
+	grass.material.phong = {1,0,0,1};
+	grass.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/grass.png");
+	
+	// to use correctly the instancing, we will need a specific shader able to treat differently each instance of the shape
+	grass.shader.load(project::path + "shaders/instancing/instancing.vert.glsl", project::path + "shaders/instancing/instancing.frag.glsl");
+
+
+
 }
 
 
@@ -90,6 +104,7 @@ void scene_structure::display_frame()
 	draw(water, environment);
 	draw(tree, environment);
 	draw(cube1, environment);
+	draw(grass, environment);
 
 	// Animate the second cube in the water
 	cube2.model.translation = { -1.0f, 6.0f+0.1*sin(0.5f*timer.t), -0.8f + 0.1f * cos(0.5f * timer.t)};
