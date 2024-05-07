@@ -41,6 +41,8 @@ struct scene_structure : cgp::scene_inputs_generic {
 
 	mesh_drawable terrain;
 	mesh_drawable terrain2;
+	mesh_drawable terrain3;
+	mesh_drawable terrain4;
 	mesh_drawable water;
 	mesh_drawable tree;
 	mesh_drawable cube1;

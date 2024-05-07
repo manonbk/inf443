@@ -20,18 +20,56 @@ void deform_terrain(mesh& m)
 	m.normal_update();
 }
 
-void deform_terrain2(mesh& m)
+float offset_2 = 4.8f;
+
+void deform_terrain_2(mesh& m)
 {
 	// Set the terrain to have a gaussian shape
 	for (int k = 0; k < m.position.size(); ++k)
 	{
 		vec3& p = m.position[k];
-		float d2 = p.x*p.x + p.y * p.y;
-		float z = exp(-d2 / 4)-1;
+		float d2 = (p.x-4.8f)*(p.x-4.8f) + (p.y-4.8f)*(p.y-4.8f);
+		float z = exp(-d2 / 6)-1;
 
-		z = z + 0.55f*noise_perlin({ p.x,p.y });
+		z = z + 0.55f*noise_perlin({ p.x,p.y })-0.7f;
 
 		p = { p.x, p.y, z };
+	}
+
+	m.normal_update();
+}
+
+float offset_3 = 5.0f;
+void deform_terrain_3(mesh& m)
+{
+	// Set the terrain to have a gaussian shape
+	for (int k = 0; k < m.position.size(); ++k)
+	{
+		vec3& p = m.position[k];
+		float d2 = (p.x-offset_3)*(p.x-offset_3) + (p.y+offset_3)*(p.y+offset_3);
+		float z = exp(-d2 / 3)-1;
+
+		z = z + 0.55f*noise_perlin({ p.x,p.y })-0.5f;
+
+		p = {p.x, p.y, z};
+	}
+
+	m.normal_update();
+}
+
+float offset_4 = 3.0f;
+void deform_terrain_4(mesh& m)
+{
+	// Set the terrain to have a gaussian shape
+	for (int k = 0; k < m.position.size(); ++k)
+	{
+		vec3& p = m.position[k];
+		float d2 = (p.x+offset_4)*(p.x+offset_4) + (p.y+offset_4)*(p.y+offset_4);
+		float z = exp(-d2 / 3)-1;
+
+		z = z + 0.55f*noise_perlin({ p.x,p.y })-0.5f;
+
+		p = {p.x, p.y, z};
 	}
 
 	m.normal_update();
@@ -138,10 +176,20 @@ void scene_structure::initialize()
 	terrain.initialize_data_on_gpu(terrain_mesh);
 	terrain.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sand.jpg");
 
-	mesh terrain_mesh_2 = mesh_primitive_grid({ -L+4.0f,-L+4.0f,0 }, { L+4.0f,-L+4.0f,0 }, { L+4.0f,L+4.0f,0 }, { -L+4.0f,L+4.0f,0}, 100, 100);
-	deform_terrain2(terrain_mesh_2);
+	mesh terrain_mesh_2 = mesh_primitive_grid({ -L+4.8f,-L+4.8f,0 }, { L+4.8f,-L+4.8f,0 }, { L+4.8f,L+4.8f,0 }, { -L+4.8f,L+4.8f,0}, 100, 100);
+	deform_terrain_2(terrain_mesh_2);
 	terrain2.initialize_data_on_gpu(terrain_mesh_2);
 	terrain2.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sand.jpg");
+
+	mesh terrain_mesh_3 = mesh_primitive_grid({ -L+offset_3,-L-offset_3,0 }, { L+offset_3,-L-offset_3,0 }, { L+offset_3,L-offset_3,0 }, { -L+offset_3,L-offset_3,0}, 50, 50);
+	deform_terrain_3(terrain_mesh_3);
+	terrain3.initialize_data_on_gpu(terrain_mesh_3);
+	terrain3.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sand.jpg");
+
+	mesh terrain_mesh_4 = mesh_primitive_grid({ -L-offset_4,-L-offset_4,0 }, { L-offset_4,-L-offset_4,0 }, { L-offset_4,L-offset_4,0 }, { -L-offset_4,L-offset_4,0}, 50, 50);
+	deform_terrain_4(terrain_mesh_4);
+	terrain4.initialize_data_on_gpu(terrain_mesh_4);
+	terrain4.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sand.jpg");
 
 	float sea_w = 8.0;
 	float sea_z = -0.8f;
@@ -181,6 +229,8 @@ void scene_structure::display_frame()
 	// Draw all the shapes
 	draw(terrain, environment);
 	draw(terrain2,environment);
+	draw(terrain3,environment);
+	draw(terrain4, environment);
 	draw(water, environment);
 	draw(tree, environment);
 	draw(cube1, environment);
@@ -192,6 +242,8 @@ void scene_structure::display_frame()
 
 	if (gui.display_wireframe) {
 		draw_wireframe(terrain, environment);
+		draw_wireframe(terrain2, environment);
+		draw_wireframe(terrain3, environment);
 		draw_wireframe(water, environment);
 		draw_wireframe(tree, environment);
 		draw_wireframe(cube1, environment);
