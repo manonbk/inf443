@@ -21,7 +21,6 @@ void deform_terrain(mesh& m)
 }
 
 float offset_2 = 4.8f;
-
 void deform_terrain_2(mesh& m)
 {
 	// Set the terrain to have a gaussian shape
@@ -75,76 +74,6 @@ void deform_terrain_4(mesh& m)
 	m.normal_update();
 }
 
-float evaluate_terrain_height(float x, float y)
-{
-    vec2 p_i[4] = { {-10,-10}, {5,5}, {-3,4}, {6,4} };
-    float h_i[4] = {3.0f, -1.5f, 1.0f, 2.0f};
-    float sigma_i[4] = {10.0f, 3.0f, 4.0f, 4.0f};
-
-    float z = 0;
-
-    for (int i =0; i<4; i++) {
-        float d = norm(vec2(x, y) - p_i[i]) / sigma_i[i];
-        z += h_i[i]*std::exp(-d * d);
-
-    }
-	z = z + 0.5f*noise_perlin({x,y})-0.5f;
-
-    return z;
-}
-
-mesh create_terrain_mesh(int N, float terrain_length)
-{
-
-    mesh terrain; // temporary terrain storage (CPU only)
-    terrain.position.resize(N*N);
-    terrain.uv.resize(N*N);
-
-    // Fill terrain geometry
-    for(int ku=0; ku<N; ++ku)
-    {
-        for(int kv=0; kv<N; ++kv)
-        {
-            // Compute local parametric coordinates (u,v) \in [0,1]
-            float u = ku/(N-1.0f);
-            float v = kv/(N-1.0f);
-
-            // Compute the real coordinates (x,y) of the terrain in [-terrain_length/2, +terrain_length/2]
-            float x = (u - 0.5f) * terrain_length;
-            float y = (v - 0.5f) * terrain_length;
-
-            // Compute the surface height function at the given sampled coordinate
-            float z = evaluate_terrain_height(x,y);
-
-            // Store vertex coordinates
-            terrain.position[kv+N*ku] = {x,y,z};
-            terrain.uv[kv+N*ku] = {u*5,v*5};
-        }
-    }
-
-    // Generate triangle organization
-    //  Parametric surface with uniform grid sampling: generate 2 triangles for each grid cell
-    for(int ku=0; ku<N-1; ++ku)
-    {
-        for(int kv=0; kv<N-1; ++kv)
-        {
-            unsigned int idx = kv + N*ku; // current vertex offset
-
-            uint3 triangle_1 = {idx, idx+1+N, idx+1};
-            uint3 triangle_2 = {idx, idx+N, idx+1+N};
-
-            terrain.connectivity.push_back(triangle_1);
-            terrain.connectivity.push_back(triangle_2);
-        }
-    }
-
-    // need to call this function to fill the other buffer with default values (normal, color, etc)
-	terrain.fill_empty_field(); 
-
-    return terrain;
-}
-
-
 // This function is called only once at the beginning of the program
 // This function can contain any complex operation that can be pre-computed once
 void scene_structure::initialize()
@@ -165,7 +94,15 @@ void scene_structure::initialize()
 	// Create the global (x,y,z) frame
 	global_frame.initialize_data_on_gpu(mesh_primitive_frame());
 
+	//Skybox
+	image_structure image_skybox_template = image_load_file("assets/skybox_02.jpg");
 
+	// Split the image into a grid of 4 x 3 sub-images
+	std::vector<image_structure> image_grid = image_split_grid(image_skybox_template, 4, 3);
+
+	skybox.initialize_data_on_gpu();
+	skybox.texture.initialize_cubemap_on_gpu(image_grid[1], image_grid[7], image_grid[5], image_grid[3], image_grid[10], image_grid[4]);
+	
 	// Create the shapes seen in the 3D scene
 	// ********************************************** //
 
@@ -217,6 +154,11 @@ void scene_structure::display_frame()
 
 	// Set the light to the current position of the camera
 	environment.light = camera_control.camera_model.position();
+
+	//  Must be called before drawing the other shapes and without writing in the Depth Buffer
+	glDepthMask(GL_FALSE); // disable depth-buffer writing
+	draw(skybox, environment);
+	glDepthMask(GL_TRUE);  // re-activate depth-buffer write
 
 	// Update time
 	timer.update();

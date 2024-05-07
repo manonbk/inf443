@@ -39,6 +39,9 @@ struct scene_structure : cgp::scene_inputs_generic {
 
 	timer_basic timer;
 
+	cgp::skybox_drawable skybox;
+
+
 	mesh_drawable terrain;
 	mesh_drawable terrain2;
 	mesh_drawable terrain3;
