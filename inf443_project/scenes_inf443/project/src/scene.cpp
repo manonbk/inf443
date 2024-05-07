@@ -26,7 +26,7 @@ float evaluate_terrain_height(float x, float y) {
 	float z4 = cgauss*exp(-d4 / 3) - 1;
 	z4 = z4 + cperl * noise_perlin({ x,y }) +0.3f;
 
-	return z1+z2+z3+z4;
+	return z1+z2+z3+z4+1.5f;
 }
 
 void deform_terrain(mesh& m)
@@ -84,9 +84,9 @@ void scene_structure::initialize()
 	terrain.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sand.jpg");
 
 	float sea_w = 8.0;
-	float sea_z = -1.0f;
+	float sea_z = -5.0f;
 	water.initialize_data_on_gpu(mesh_primitive_grid({ -sea_w,-sea_w,sea_z }, { sea_w,-sea_w,sea_z }, { sea_w,sea_w,sea_z }, { -sea_w,sea_w,sea_z }));
-	water.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sea.png");
+	//water.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sea.png");
 	water.shader.load(project::path + "shaders/mesh_deformation/mesh_deformation.vert.glsl", project::path + "shaders/mesh_deformation/mesh_deformation.frag.glsl");
 
 	tree.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/palm_tree/palm_tree.obj"));
