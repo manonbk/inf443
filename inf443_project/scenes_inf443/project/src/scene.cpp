@@ -3,15 +3,14 @@
 
 using namespace cgp;
 
-vec3 evaluate_terrain_height(float x, float y) {
+float evaluate_terrain_height(float x, float y) {
 
 	float d2 = x * x + y * y;
 	float z = exp(-d2 / 4) - 1;
 
 	z = z + 0.05f * noise_perlin({ x,y });
 
-	vec3 p = { x, y, z };
-	return p;
+	return z;
 }
 
 void deform_terrain(mesh& m)
@@ -20,13 +19,32 @@ void deform_terrain(mesh& m)
 	for (int k = 0; k < m.position.size(); ++k)
 	{
 		vec3& p = m.position[k];
-		vec3 a = evaluate_terrain_height(p.y,p.x);
-		std::cout << a << std::endl;
+		float z = evaluate_terrain_height(p.x,p.y);
+		vec3 a = { p.x, p.y, z };
 		m.position[k] = a;
 
 	}
 
 	m.normal_update();
+}
+
+std::vector<cgp::vec3> generate_positions_on_terrain(int N, float terrain_length) {
+	//arbres
+	std::vector<cgp::vec3> positions;
+	float x;
+	float y;
+	float z;
+	int count = 0;
+	while(count<N) {
+		x = float(std::rand())/float(RAND_MAX) * terrain_length - terrain_length / 2;
+		y = float(std::rand()) / float(RAND_MAX) * terrain_length - terrain_length / 2;
+		z = evaluate_terrain_height(x, y);
+		if (z > -0.7) {
+			positions.push_back({ x,y,z });
+			count += 1;
+		}
+	}
+	return positions;
 }
 
 // This function is called only once at the beginning of the program
@@ -81,12 +99,14 @@ void scene_structure::initialize()
 	mesh quad2 = mesh_primitive_quadrangle({0.0f,-0.5f,0.0f}, {0.0f,0.5f,0.0f}, {0.0f,0.5f,1.0f}, {0.0f,-0.5f,1.0f}); // second quad is orthogonal to the first one
 	quad.push_back(quad2);
 	grass.initialize_data_on_gpu(quad);
+	grass.model.scaling = 0.1f;
 	grass.material.phong = {1,0,0,1};
 	grass.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/grass.png");
-	
+
 	// to use correctly the instancing, we will need a specific shader able to treat differently each instance of the shape
 	grass.shader.load(project::path + "shaders/instancing/instancing.vert.glsl", project::path + "shaders/instancing/instancing.frag.glsl");
 
+	grass_positions = generate_positions_on_terrain(30, L);
 
 
 }
@@ -113,7 +133,11 @@ void scene_structure::display_frame()
 	draw(water, environment);
 	draw(tree, environment);
 	draw(cube1, environment);
-	draw(grass, environment);
+	
+	for (int i = 0; i < 100; i++) {
+		grass.model.translation = grass_positions[i];
+		draw(grass, environment);
+	}
 
 	// Animate the second cube in the water
 	cube2.model.translation = { -1.0f, 6.0f+0.1*sin(0.5f*timer.t), -0.8f + 0.1f * cos(0.5f * timer.t)};

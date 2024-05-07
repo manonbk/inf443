@@ -45,6 +45,8 @@ struct scene_structure : cgp::scene_inputs_generic {
 	mesh_drawable cube2;
 	mesh_drawable grass;
 
+	std::vector<cgp::vec3> grass_positions;
+
 
 	// ****************************** //
 	// Functions
