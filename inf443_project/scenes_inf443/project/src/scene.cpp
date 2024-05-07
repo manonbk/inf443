@@ -132,6 +132,7 @@ void scene_structure::initialize()
 	float sea_z = -0.8f;
 	water.initialize_data_on_gpu(mesh_primitive_grid({ -sea_w,-sea_w,sea_z }, { sea_w,-sea_w,sea_z }, { sea_w,sea_w,sea_z }, { -sea_w,sea_w,sea_z }));
 	water.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sea.png");
+	water.shader.load(project::path + "shaders/mesh_deformation/mesh_deformation.vert.glsl", project::path + "shaders/mesh_deformation/mesh_deformation.frag.glsl");
 
 	tree.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/palm_tree/palm_tree.obj"));
 	tree.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2.0f);
@@ -162,6 +163,9 @@ void scene_structure::display_frame()
 
 	// Update time
 	timer.update();
+
+	// Send current time as a uniform value to the shader
+	environment.uniform_generic.uniform_float["time"] = timer.t;
 
 	// conditional display of the global frame (set via the GUI)
 	if (gui.display_frame)
