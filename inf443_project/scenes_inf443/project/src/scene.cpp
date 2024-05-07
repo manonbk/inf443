@@ -3,16 +3,39 @@
 
 using namespace cgp;
 
+float evaluate_terrain_height(float x, float y) {
+
+	float cperl=0.25;
+	float cgauss = 2.5f;
+
+	float d1 = x * x + y * y;
+	float z1 = cgauss*exp(-d1 / 4) - 1;
+	z1 = z1 + cperl * noise_perlin({ x,y })+ 0.3f ;
+
+	float d2 = (x - 4.8f) * (x - 4.8f) + (y - 4.8f) * (y - 4.8f);
+	float z2 = cgauss*exp(-d2 / 6) - 1;
+	z2 = z2 + cperl * noise_perlin({ x,y }) + 0.2f;
+
+	float offset_3 = 5.0f;
+	float d3 = (x - offset_3) * (x - offset_3) + (y + offset_3) * (y + offset_3);
+	float z3 = cgauss*exp(-d3 / 3) - 1;
+	z3 = z3 + cperl * noise_perlin({ x,y }) +0.3f ;
+
+	float offset_4 = 3.0f;
+	float d4 = (x + offset_4) * (x + offset_4) + (y + offset_4) * (y + offset_4);
+	float z4 = cgauss*exp(-d4 / 3) - 1;
+	z4 = z4 + cperl * noise_perlin({ x,y }) +0.3f;
+
+	return z1+z2+z3+z4;
+}
+
 void deform_terrain(mesh& m)
 {
 	// Set the terrain to have a gaussian shape
 	for (int k = 0; k < m.position.size(); ++k)
 	{
 		vec3& p = m.position[k];
-		float d2 = p.x*p.x + p.y * p.y;
-		float z = exp(-d2 / 4)-1;
-
-		z = z + 0.55f*noise_perlin({ p.x,p.y })-0.5f;
+		float z = evaluate_terrain_height(p.x,p.y);
 
 		p = { p.x, p.y, z };
 	}
@@ -20,59 +43,6 @@ void deform_terrain(mesh& m)
 	m.normal_update();
 }
 
-float offset_2 = 4.8f;
-void deform_terrain_2(mesh& m)
-{
-	// Set the terrain to have a gaussian shape
-	for (int k = 0; k < m.position.size(); ++k)
-	{
-		vec3& p = m.position[k];
-		float d2 = (p.x-4.8f)*(p.x-4.8f) + (p.y-4.8f)*(p.y-4.8f);
-		float z = exp(-d2 / 6)-1;
-
-		z = z + 0.55f*noise_perlin({ p.x,p.y })-0.7f;
-
-		p = { p.x, p.y, z };
-	}
-
-	m.normal_update();
-}
-
-float offset_3 = 5.0f;
-void deform_terrain_3(mesh& m)
-{
-	// Set the terrain to have a gaussian shape
-	for (int k = 0; k < m.position.size(); ++k)
-	{
-		vec3& p = m.position[k];
-		float d2 = (p.x-offset_3)*(p.x-offset_3) + (p.y+offset_3)*(p.y+offset_3);
-		float z = exp(-d2 / 3)-1;
-
-		z = z + 0.55f*noise_perlin({ p.x,p.y })-0.5f;
-
-		p = {p.x, p.y, z};
-	}
-
-	m.normal_update();
-}
-
-float offset_4 = 3.0f;
-void deform_terrain_4(mesh& m)
-{
-	// Set the terrain to have a gaussian shape
-	for (int k = 0; k < m.position.size(); ++k)
-	{
-		vec3& p = m.position[k];
-		float d2 = (p.x+offset_4)*(p.x+offset_4) + (p.y+offset_4)*(p.y+offset_4);
-		float z = exp(-d2 / 3)-1;
-
-		z = z + 0.55f*noise_perlin({ p.x,p.y })-0.5f;
-
-		p = {p.x, p.y, z};
-	}
-
-	m.normal_update();
-}
 
 // This function is called only once at the beginning of the program
 // This function can contain any complex operation that can be pre-computed once
@@ -106,30 +76,15 @@ void scene_structure::initialize()
 	// Create the shapes seen in the 3D scene
 	// ********************************************** //
 
-	float L = 3.0f;
+	float L = 7.0f;
 	mesh terrain_mesh = mesh_primitive_grid({ -L,-L,0 }, { L,-L,0 }, { L,L,0 }, { -L,L,0 }, 100, 100);
 	deform_terrain(terrain_mesh);
 	//mesh terrain_mesh = create_terrain_mesh(100,L);
 	terrain.initialize_data_on_gpu(terrain_mesh);
 	terrain.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sand.jpg");
 
-	mesh terrain_mesh_2 = mesh_primitive_grid({ -L+4.8f,-L+4.8f,0 }, { L+4.8f,-L+4.8f,0 }, { L+4.8f,L+4.8f,0 }, { -L+4.8f,L+4.8f,0}, 100, 100);
-	deform_terrain_2(terrain_mesh_2);
-	terrain2.initialize_data_on_gpu(terrain_mesh_2);
-	terrain2.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sand.jpg");
-
-	mesh terrain_mesh_3 = mesh_primitive_grid({ -L+offset_3,-L-offset_3,0 }, { L+offset_3,-L-offset_3,0 }, { L+offset_3,L-offset_3,0 }, { -L+offset_3,L-offset_3,0}, 50, 50);
-	deform_terrain_3(terrain_mesh_3);
-	terrain3.initialize_data_on_gpu(terrain_mesh_3);
-	terrain3.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sand.jpg");
-
-	mesh terrain_mesh_4 = mesh_primitive_grid({ -L-offset_4,-L-offset_4,0 }, { L-offset_4,-L-offset_4,0 }, { L-offset_4,L-offset_4,0 }, { -L-offset_4,L-offset_4,0}, 50, 50);
-	deform_terrain_4(terrain_mesh_4);
-	terrain4.initialize_data_on_gpu(terrain_mesh_4);
-	terrain4.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sand.jpg");
-
 	float sea_w = 8.0;
-	float sea_z = -0.8f;
+	float sea_z = -1.0f;
 	water.initialize_data_on_gpu(mesh_primitive_grid({ -sea_w,-sea_w,sea_z }, { sea_w,-sea_w,sea_z }, { sea_w,sea_w,sea_z }, { -sea_w,sea_w,sea_z }));
 	water.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sea.png");
 	water.shader.load(project::path + "shaders/mesh_deformation/mesh_deformation.vert.glsl", project::path + "shaders/mesh_deformation/mesh_deformation.frag.glsl");
