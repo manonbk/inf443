@@ -3,18 +3,27 @@
 
 using namespace cgp;
 
+vec3 evaluate_terrain_height(float x, float y) {
+
+	float d2 = x * x + y * y;
+	float z = exp(-d2 / 4) - 1;
+
+	z = z + 0.05f * noise_perlin({ x,y });
+
+	vec3 p = { x, y, z };
+	return p;
+}
+
 void deform_terrain(mesh& m)
 {
 	// Set the terrain to have a gaussian shape
 	for (int k = 0; k < m.position.size(); ++k)
 	{
 		vec3& p = m.position[k];
-		float d2 = p.x*p.x + p.y * p.y;
-		float z = exp(-d2 / 4)-1;
+		vec3 a = evaluate_terrain_height(p.y,p.x);
+		std::cout << a << std::endl;
+		m.position[k] = a;
 
-		z = z + 0.05f*noise_perlin({ p.x,p.y });
-
-		p = { p.x, p.y, z };
 	}
 
 	m.normal_update();
