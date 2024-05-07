@@ -20,6 +20,23 @@ void deform_terrain(mesh& m)
 	m.normal_update();
 }
 
+void deform_terrain2(mesh& m)
+{
+	// Set the terrain to have a gaussian shape
+	for (int k = 0; k < m.position.size(); ++k)
+	{
+		vec3& p = m.position[k];
+		float d2 = p.x*p.x + p.y * p.y;
+		float z = exp(-d2 / 4)-1;
+
+		z = z + 0.55f*noise_perlin({ p.x,p.y });
+
+		p = { p.x, p.y, z };
+	}
+
+	m.normal_update();
+}
+
 float evaluate_terrain_height(float x, float y)
 {
     vec2 p_i[4] = { {-10,-10}, {5,5}, {-3,4}, {6,4} };
@@ -121,8 +138,8 @@ void scene_structure::initialize()
 	terrain.initialize_data_on_gpu(terrain_mesh);
 	terrain.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sand.jpg");
 
-	mesh terrain_mesh_2 = mesh_primitive_grid({ -L+4.0f,-L+4.0f,0 }, { L+4.0f,-L+4.0f,0 }, { L+4.0f,L+4.0f,0 }, { -L+4.0f,L+4.0f,0 }, 100, 100);
-	deform_terrain(terrain_mesh_2);
+	mesh terrain_mesh_2 = mesh_primitive_grid({ -L+4.0f,-L+4.0f,0 }, { L+4.0f,-L+4.0f,0 }, { L+4.0f,L+4.0f,0 }, { -L+4.0f,L+4.0f,0}, 100, 100);
+	deform_terrain2(terrain_mesh_2);
 	terrain2.initialize_data_on_gpu(terrain_mesh_2);
 	terrain2.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sand.jpg");
 
