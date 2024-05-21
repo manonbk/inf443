@@ -116,6 +116,7 @@ void scene_structure::display_frame()
 	if (gui.display_frame)
 		draw(global_frame, environment);
 
+	//Bateau fixe suit la surface de l'eau
 	vec2 p0 = {2.0f,2.0f};
 	float d = sqrt(p0.x*p0.x+p0.y*p0.y);
 	float omega = 20.0*d - 3.0*timer.t;
