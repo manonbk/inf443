@@ -85,14 +85,15 @@ void scene_structure::initialize()
 	global_frame.initialize_data_on_gpu(mesh_primitive_frame());
 
 	//Skybox
-	image_structure image_skybox_template = image_load_file("assets/skybox_02.jpg");
+	image_structure image_skybox_template = image_load_file("assets/skybox_03.png");
 
 	// Split the image into a grid of 4 x 3 sub-images
 	std::vector<image_structure> image_grid = image_split_grid(image_skybox_template, 4, 3);
 
 	skybox.initialize_data_on_gpu();
-	skybox.texture.initialize_cubemap_on_gpu(image_grid[1], image_grid[7], image_grid[5], image_grid[3], image_grid[10], image_grid[4]);
-	
+	skybox.texture.initialize_cubemap_on_gpu(image_grid[1], image_grid[7], image_grid[8], image_grid[6], image_grid[10], image_grid[4]);
+	skybox.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, 3.14f / 2.0);
+
 	// Create the shapes seen in the 3D scene
 	// ********************************************** //
 
@@ -103,7 +104,7 @@ void scene_structure::initialize()
 	terrain.initialize_data_on_gpu(terrain_mesh);
 	terrain.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sand.jpg");
 
-	float sea_w = 8.0;
+	float sea_w = 20.0;
 	float sea_z = -5.0f;
 	water.initialize_data_on_gpu(mesh_primitive_grid({ -sea_w,-sea_w,sea_z }, { sea_w,-sea_w,sea_z }, { sea_w,sea_w,sea_z }, { -sea_w,sea_w,sea_z }));
 	//water.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sea.png");
@@ -115,6 +116,12 @@ void scene_structure::initialize()
 	tree.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/palm_tree/palm_tree.obj"));
 	tree.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2.0f);
 	tree.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/palm_tree/palm_tree.jpg", GL_REPEAT, GL_REPEAT);
+
+	boat.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/boat/boat.obj"));
+	//boat.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/fishing_boat/boat_diffuse.bmp", GL_REPEAT, GL_REPEAT);
+	//boat.model.translation = vec3(2.0f,0,0);
+	boat.model.scaling = 1.0f;
+	boat.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, 3.14f / 2.0);
 
 	// Create two quads to display the blades of grass as impostors
 	mesh quad = mesh_primitive_quadrangle({ -0.5f,0.0f,0.0f }, { 0.5f,0.0f,0.0f }, { 0.5f,0.0f,1.0f }, { -0.5f,0.0f,1.0f });
@@ -164,6 +171,7 @@ void scene_structure::display_frame()
 	draw(terrain4, environment);
 	draw(water, environment);
 	draw(tree, environment);
+	draw(boat,environment);
 
 	for (int i = 0; i < 100; i++) {
 		grass.model.translation = grass_positions[i];
