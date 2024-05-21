@@ -43,7 +43,7 @@ void deform_terrain(mesh& m)
 	m.normal_update();
 }
 
-std::vector<cgp::vec3> generate_positions_on_terrain(int N, float terrain_length) {
+std::vector<cgp::vec3> generate_positions_on_terrain(int N, float terrain_length, float height) {
 	//arbres
 	std::vector<cgp::vec3> positions;
 	float x;
@@ -55,7 +55,7 @@ std::vector<cgp::vec3> generate_positions_on_terrain(int N, float terrain_length
 		y = float(std::rand()) / float(RAND_MAX) * terrain_length - terrain_length / 2;
 		z = evaluate_terrain_height(x, y);
 		
-		if (z > 0.0f) {
+		if (z > height) {
 			positions.push_back({ x,y,z });
 			count += 1;
 		}
@@ -135,7 +135,18 @@ void scene_structure::initialize()
 	// to use correctly the instancing, we will need a specific shader able to treat differently each instance of the shape
 	grass.shader.load(project::path + "shaders/instancing/instancing.vert.glsl", project::path + "shaders/instancing/instancing.frag.glsl");
 
-	grass_positions = generate_positions_on_terrain(100, L);
+	grass_positions = generate_positions_on_terrain(nb_grass, 2L, 0.0f);
+
+	// mesh_load_file_obj: lit un fichier .obj et renvoie une structure mesh lui correspondant
+	mesh tree_mesh = mesh_load_file_obj(project::path + "assets/mj/Plant.obj");
+
+	// Initialisation classique de la structure mesh_drawable
+	tree.initialize_data_on_gpu(tree_mesh);
+
+	// Ajustement de la taille et position de la forme
+	tree.model.scaling = 0.002f;
+	tree.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, 3.14f / 2.0);
+	tree_positions = generate_positions_on_terrain(nb_tree, 2L, 0.0f);
 
 }
 
@@ -173,9 +184,14 @@ void scene_structure::display_frame()
 	draw(tree, environment);
 	draw(boat,environment);
 
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < nb_grass; i++) {
 		grass.model.translation = grass_positions[i];
 		draw(grass, environment);
+	}
+
+	for (int i = 0; i < nb_tree; i++) {
+		tree.model.translation = tree_positions[i];
+		draw(tree, environment);
 	}
 
 
@@ -189,7 +205,6 @@ void scene_structure::display_frame()
 		draw_wireframe(terrain2, environment);
 		draw_wireframe(terrain3, environment);
 		draw_wireframe(water, environment);
-		draw_wireframe(tree, environment);
 		draw_wireframe(grass, environment);
 	}
 	
