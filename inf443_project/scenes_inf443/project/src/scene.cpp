@@ -1,68 +1,8 @@
 #include "scene.hpp"
+#include "terrain.hpp"
 
 
 using namespace cgp;
-
-float evaluate_terrain_height(float x, float y) {
-
-	float cperl=0.25;
-	float cgauss = 2.5f;
-
-	float d1 = x * x + y * y;
-	float z1 = cgauss*exp(-d1 / 4) - 1;
-	z1 = z1 + cperl * noise_perlin({ x,y })+ 0.3f ;
-
-	float d2 = (x - 4.8f) * (x - 4.8f) + (y - 4.8f) * (y - 4.8f);
-	float z2 = cgauss*exp(-d2 / 6) - 1;
-	z2 = z2 + cperl * noise_perlin({ x,y }) + 0.2f;
-
-	float offset_3 = 5.0f;
-	float d3 = (x - offset_3) * (x - offset_3) + (y + offset_3) * (y + offset_3);
-	float z3 = cgauss*exp(-d3 / 3) - 1;
-	z3 = z3 + cperl * noise_perlin({ x,y }) +0.3f ;
-
-	float offset_4 = 3.0f;
-	float d4 = (x + offset_4) * (x + offset_4) + (y + offset_4) * (y + offset_4);
-	float z4 = cgauss*exp(-d4 / 3) - 1;
-	z4 = z4 + cperl * noise_perlin({ x,y }) +0.3f;
-
-	return z1+z2+z3+z4+0.8f;
-}
-
-void deform_terrain(mesh& m)
-{
-	// Set the terrain to have a gaussian shape
-	for (int k = 0; k < m.position.size(); ++k)
-	{
-		vec3& p = m.position[k];
-		float z = evaluate_terrain_height(p.x,p.y);
-
-		p = { p.x, p.y, z };
-	}
-
-	m.normal_update();
-}
-
-std::vector<cgp::vec3> generate_positions_on_terrain(int N, float terrain_length, float height) {
-	//arbres
-	std::vector<cgp::vec3> positions;
-	float x;
-	float y;
-	float z;
-	int count = 0;
-	while (count < N) {
-		x = float(std::rand()) / float(RAND_MAX) * terrain_length - terrain_length / 2;
-		y = float(std::rand()) / float(RAND_MAX) * terrain_length - terrain_length / 2;
-		z = evaluate_terrain_height(x, y);
-		
-		if (z > height) {
-			positions.push_back({ x,y,z });
-			count += 1;
-		}
-	}
-	return positions;
-}
-
 
 // This function is called only once at the beginning of the program
 // This function can contain any complex operation that can be pre-computed once
@@ -99,7 +39,7 @@ void scene_structure::initialize()
 
 	float L = 7.0f;
 	mesh terrain_mesh = mesh_primitive_grid({ -L,-L,0 }, { L,-L,0 }, { L,L,0 }, { -L,L,0 }, 100, 100);
-	deform_terrain(terrain_mesh);
+	Terrain::deform_terrain(terrain_mesh);
 	//mesh terrain_mesh = create_terrain_mesh(100,L);
 	terrain.initialize_data_on_gpu(terrain_mesh);
 	terrain.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sand.jpg");
@@ -135,7 +75,7 @@ void scene_structure::initialize()
 	// to use correctly the instancing, we will need a specific shader able to treat differently each instance of the shape
 	grass.shader.load(project::path + "shaders/instancing/instancing.vert.glsl", project::path + "shaders/instancing/instancing.frag.glsl");
 
-	grass_positions = generate_positions_on_terrain(nb_grass, 2L, 0.0f);
+	grass_positions = Terrain::generate_positions_on_terrain(nb_grass, 3.0f*L, 0.0f);
 
 	// mesh_load_file_obj: lit un fichier .obj et renvoie une structure mesh lui correspondant
 	mesh tree_mesh = mesh_load_file_obj(project::path + "assets/mj/Plant.obj");
@@ -146,7 +86,7 @@ void scene_structure::initialize()
 	// Ajustement de la taille et position de la forme
 	tree.model.scaling = 0.002f;
 	tree.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, 3.14f / 2.0);
-	tree_positions = generate_positions_on_terrain(nb_tree, 2L, 0.0f);
+	tree_positions = Terrain::generate_positions_on_terrain(nb_tree, 3.0f*L, 0.0f);
 
 }
 
