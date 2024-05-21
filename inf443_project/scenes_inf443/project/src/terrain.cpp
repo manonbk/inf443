@@ -10,7 +10,7 @@ using cgp::mesh;
 
 float Terrain::evaluate_terrain_height(float x, float y) {
 
-		//calcule la hauteur z de chaque point (x,y) du sol. Construit 4 îles selon des gaussiennes, modifiées avec un bruit de perlin
+		//calcule la hauteur z de chaque point (x,y) du sol. Construit 4 ï¿½les selon des gaussiennes, modifiï¿½es avec un bruit de perlin
 
 		float cperl = 0.25;
 		float cgauss = 2.5f;
@@ -38,7 +38,7 @@ float Terrain::evaluate_terrain_height(float x, float y) {
 
 void Terrain::deform_terrain(mesh& m)
 	{
-		//applique la transformation calculée dans evaluate_terrain_height.
+		//applique la transformation calculï¿½e dans evaluate_terrain_height.
 
 		for (int k = 0; k < m.position.size(); ++k)
 		{
@@ -53,7 +53,7 @@ void Terrain::deform_terrain(mesh& m)
 
 std::vector<cgp::vec3> Terrain::generate_positions_on_terrain(int N, float terrain_length, float height) {
 
-		//crée un tableau de taille N de vecteurs 3d de positions
+		//crï¿½e un tableau de taille N de vecteurs 3d de positions
 		std::vector<cgp::vec3> positions;
 		float x;
 		float y;

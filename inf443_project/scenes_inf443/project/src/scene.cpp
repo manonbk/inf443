@@ -44,7 +44,7 @@ void scene_structure::initialize()
 	terrain.initialize_data_on_gpu(terrain_mesh);
 	terrain.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sand.jpg");
 
-	float sea_w = 20.0;
+	float sea_w = 40.0;
 	float sea_z = -5.0f;
 	water.initialize_data_on_gpu(mesh_primitive_grid({ -sea_w,-sea_w,sea_z }, { sea_w,-sea_w,sea_z }, { sea_w,sea_w,sea_z }, { -sea_w,sea_w,sea_z }));
 	//water.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sea.png");
@@ -57,11 +57,13 @@ void scene_structure::initialize()
 	tree.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2.0f);
 	tree.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/palm_tree/palm_tree.jpg", GL_REPEAT, GL_REPEAT);
 
-	boat.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/boat/boat.obj"));
-	//boat.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/fishing_boat/boat_diffuse.bmp", GL_REPEAT, GL_REPEAT);
-	//boat.model.translation = vec3(2.0f,0,0);
-	boat.model.scaling = 1.0f;
+	boat.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/Yatch_OBJ/Yatch.obj"));
+	boat.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/Yatch_OBJ/Yatch_DIF.png", GL_REPEAT, GL_REPEAT);
+	
+	boat.model.scaling = 0.2f;
 	boat.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, 3.14f / 2.0);
+	boat.model.translation = vec3(2.0f,2.0f,0);
+
 
 	// Create two quads to display the blades of grass as impostors
 	mesh quad = mesh_primitive_quadrangle({ -0.5f,0.0f,0.0f }, { 0.5f,0.0f,0.0f }, { 0.5f,0.0f,1.0f }, { -0.5f,0.0f,1.0f });
@@ -113,6 +115,12 @@ void scene_structure::display_frame()
 	// conditional display of the global frame (set via the GUI)
 	if (gui.display_frame)
 		draw(global_frame, environment);
+
+	vec2 p0 = {2.0f,2.0f};
+	float d = sqrt(p0.x*p0.x+p0.y*p0.y);
+	float omega = 20.0*d - 3.0*timer.t;
+	vec3 p = vec3(p0.x, p0.y, 0.05*cos(omega));
+	boat.model.translation = p;
 	
 
 	// Draw all the shapes
