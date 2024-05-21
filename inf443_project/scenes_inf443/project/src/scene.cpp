@@ -107,6 +107,9 @@ void scene_structure::initialize()
 	float sea_z = -5.0f;
 	water.initialize_data_on_gpu(mesh_primitive_grid({ -sea_w,-sea_w,sea_z }, { sea_w,-sea_w,sea_z }, { sea_w,sea_w,sea_z }, { -sea_w,sea_w,sea_z }));
 	//water.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sea.png");
+	water.material.color = { 0, 0, 1.0f };
+	water.material.alpha = 0.2f;
+	water.material.texture_settings.two_sided=true;
 	water.shader.load(project::path + "shaders/mesh_deformation/mesh_deformation.vert.glsl", project::path + "shaders/mesh_deformation/mesh_deformation.frag.glsl");
 
 	tree.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/palm_tree/palm_tree.obj"));

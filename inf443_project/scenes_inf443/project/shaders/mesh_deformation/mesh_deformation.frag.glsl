@@ -109,7 +109,7 @@ void main()
 	// Get the current texture color
 	vec4 color_image_texture = texture(image_texture, uv_image);
 	if(material.texture_settings.use_texture == false) {
-		color_image_texture=vec4(1.0,1.0,1.0,1.0);
+		color_image_texture=vec4(0.19, 0.38, 0.97, 1.0);
 	}
 	
 	// Compute Shading
