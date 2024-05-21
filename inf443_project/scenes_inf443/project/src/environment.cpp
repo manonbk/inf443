@@ -1,4 +1,5 @@
 #include "environment.hpp"
+#include "terrain.hpp"
 
 std::string project::path = "";
 float project::gui_scale = 1.5f;

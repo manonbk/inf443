@@ -3,6 +3,7 @@
 
 #include "cgp/cgp.hpp"
 #include "environment.hpp"
+#include "terrain.hpp"
 
 // This definitions allow to use the structures: mesh, mesh_drawable, etc. without mentionning explicitly cgp::
 using cgp::mesh;
@@ -53,8 +54,8 @@ struct scene_structure : cgp::scene_inputs_generic {
 	std::vector<cgp::vec3> grass_positions;
 	std::vector<cgp::vec3> tree_positions;
 
-	int nb_grass = 100;
-	int nb_tree = 50;
+	int nb_grass = 500;
+	int nb_tree = 100;
 
 
 	// ****************************** //
