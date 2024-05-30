@@ -102,6 +102,7 @@ void scene_structure::initialize()
 	tree.model.scaling = 0.002f;
 	tree.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, 3.14f / 2.0);
 	tree_positions = Terrain::generate_positions_on_terrain(nb_tree, 3.0f*L, 0.0f);
+	tree.material.color = { 55.0f / 255.0f, 155.0f / 255.0f, 35.0f / 255.0f };
 
 	// Definition of the initial data
 	//--------------------------------------//
@@ -125,6 +126,11 @@ void scene_structure::initialize()
 	timer.t_min = key_times[1];
 	timer.t_max = key_times[N - 2];
 	timer.t = timer.t_min;
+}
+
+void scene_structure::rotate_boat(float angle)
+{
+	boat2.model.rotation = rotation_transform::from_axis_angle({ 0, 0, 1 }, angle);
 }
 
 
