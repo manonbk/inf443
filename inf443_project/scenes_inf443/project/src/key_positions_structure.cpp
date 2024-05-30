@@ -16,7 +16,6 @@ void keyframe_structure::initialize(numarray<vec3> const& key_positions_arg, num
 	
 	boat.model.scaling = 0.2f;
 	boat.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, 3.14f / 2.0);
-	boat.model.translation = vec3(2.0f,2.0f,0);
 	
 	
 
@@ -55,11 +54,6 @@ void keyframe_structure::display_current_position(vec3 const& p,float t, environ
 {
 	// Display the interpolated position
 	boat.model.translation = p;
-	//vec2 p0 = {2.0f,2.0f};
-	float d = sqrt(p.x*p.x+p.y*p.y);
-	float omega = 20.0*d - 3.0*t;
-	vec3 p2 = vec3(p.x, p.y, 0.05*cos(omega));
-	boat.model.translation = p2;
 	draw(boat, environment);
 
 	// Display the trajectory

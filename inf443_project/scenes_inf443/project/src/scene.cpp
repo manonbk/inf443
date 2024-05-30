@@ -59,6 +59,12 @@ void scene_structure::initialize()
 	tree.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2.0f);
 	tree.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/palm_tree/palm_tree.jpg", GL_REPEAT, GL_REPEAT);
 
+	boat2.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/Yatch_OBJ/Yatch.obj"));
+	boat2.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/Yatch_OBJ/Yatch_DIF.png", GL_REPEAT, GL_REPEAT);
+	
+	boat2.model.scaling = 0.2f;
+	boat2.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, 3.14f / 2.0);
+	boat2.model.translation = vec3(-4.0f,-6.0f,0);
 
 	// Create two quads to display the blades of grass as impostors
 	mesh quad = mesh_primitive_quadrangle({ -0.5f,0.0f,0.0f }, { 0.5f,0.0f,0.0f }, { 0.5f,0.0f,1.0f }, { -0.5f,0.0f,1.0f });
@@ -94,7 +100,7 @@ void scene_structure::initialize()
 
 	// Key times (time at which the position must pass in the corresponding position)
 	numarray<float> key_times = 
-	{ 0.0f, 1.0f, 2.0f, 2.5f, 3.0f, 3.5f, 3.75f, 4.5f, 5.0f, 6.0f, 7.0f, 8.0f };
+	{ 0.0f, 10.0f, 20.0f, 25.0f, 30.0f, 35.0f, 37.5f, 45.0f, 50.0f, 60.0f, 70.0f, 80.0f };
 
 	// Initialize the helping structure to display/interact with these positions
 	keyframe.initialize(key_positions, key_times);
@@ -135,11 +141,11 @@ void scene_structure::display_frame()
 		draw(global_frame, environment);
 
 	//Bateau fixe suit la surface de l'eau
-	//vec2 p0 = {2.0f,2.0f};
-	//float d = sqrt(p0.x*p0.x+p0.y*p0.y);
-	//float omega = 20.0*d - 3.0*timer.t;
-	//vec3 p = vec3(p0.x, p0.y, 0.05*cos(omega));
-	//boat.model.translation = p;
+	vec2 p0 = {-4.0f,-6.0f};
+	float d = sqrt(p0.x*p0.x+p0.y*p0.y);
+	float omega = 20.0*d - 3.0*timer.t;
+	vec3 pos = vec3(p0.x, p0.y, 0.05*cos(omega));
+	boat2.model.translation = pos;
 	
 
 	// Draw all the shapes
@@ -149,6 +155,7 @@ void scene_structure::display_frame()
 	draw(terrain4, environment);
 	draw(water, environment);
 	draw(tree, environment);
+	draw(boat2,environment);
 	
 
 	for (int i = 0; i < nb_grass; i++) {
@@ -187,6 +194,7 @@ void scene_structure::display_frame()
 		draw_wireframe(terrain3, environment);
 		draw_wireframe(water, environment);
 		draw_wireframe(grass, environment);
+		draw_wireframe(boat2, environment);
 	}
 	
 
