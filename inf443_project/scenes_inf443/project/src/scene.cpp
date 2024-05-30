@@ -69,10 +69,6 @@ void scene_structure::initialize()
 	water.shader.load(project::path + "shaders/mesh_deformation/mesh_deformation.vert.glsl", project::path + "shaders/mesh_deformation/mesh_deformation.frag.glsl");
 	water.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sea.png", GL_REPEAT, GL_REPEAT);
 
-	tree.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/palm_tree/palm_tree.obj"));
-	tree.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2.0f);
-	tree.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/palm_tree/palm_tree.jpg", GL_REPEAT, GL_REPEAT);
-
 	boat2.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/Yatch_OBJ/Yatch.obj"));
 	boat2.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/Yatch_OBJ/Yatch_DIF.png", GL_REPEAT, GL_REPEAT);
 	
@@ -104,6 +100,7 @@ void scene_structure::initialize()
 	tree.model.scaling = 0.002f;
 	tree.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, 3.14f / 2.0);
 	tree_positions = Terrain::generate_positions_on_terrain(nb_tree, 3.0f*L, 0.0f);
+	tree.material.color = { 55.0f / 255.0f, 155.0f / 255.0f, 35.0f / 255.0f };
 
 	// Definition of the initial data
 	//--------------------------------------//
@@ -127,6 +124,11 @@ void scene_structure::initialize()
 	timer.t_min = key_times[1];
 	timer.t_max = key_times[N - 2];
 	timer.t = timer.t_min;
+}
+
+void scene_structure::rotate_boat(float angle)
+{
+	boat2.model.rotation = rotation_transform::from_axis_angle({ 0, 0, 1 }, angle);
 }
 
 
