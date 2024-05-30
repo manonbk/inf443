@@ -44,7 +44,9 @@ void scene_structure::initialize()
 	Terrain::deform_terrain(terrain_mesh);
 	//mesh terrain_mesh = create_terrain_mesh(100,L);
 	terrain.initialize_data_on_gpu(terrain_mesh);
-	terrain.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sand.jpg");
+	//terrain.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sand.jpg");
+	terrain.shader.load(project::path + "shaders/mesh_custom/mesh.vert.custom.glsl", project::path + "shaders/mesh_custom/mesh.frag.custom.glsl");
+
 
 	float sea_w = 40.0;
 	float sea_z = -5.0f;
