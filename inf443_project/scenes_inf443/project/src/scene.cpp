@@ -1,6 +1,7 @@
 #include "scene.hpp"
 #include "terrain.hpp"
 #include "interpolation.hpp"
+#include "models_textures.hpp"
 
 
 
@@ -104,6 +105,11 @@ void scene_structure::initialize()
 	tree_positions = Terrain::generate_positions_on_terrain(nb_tree, 3.0f*L, 0.0f);
 	tree.material.color = { 55.0f / 255.0f, 155.0f / 255.0f, 35.0f / 255.0f };
 
+	mesh arc_en_ciel_mesh = torus_with_texture();
+	arc_en_ciel.initialize_data_on_gpu(arc_en_ciel_mesh);
+	arc_en_ciel.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, 3.14f / 2.0);
+	arc_en_ciel.model.scaling = 2.0f;
+
 	// Definition of the initial data
 	//--------------------------------------//
 
@@ -174,6 +180,7 @@ void scene_structure::display_frame()
 	draw(water, environment);
 	draw(tree, environment);
 	draw(boat2,environment);
+	draw(arc_en_ciel, environment);
 	
 
 	for (int i = 0; i < nb_grass; i++) {
@@ -213,6 +220,7 @@ void scene_structure::display_frame()
 		draw_wireframe(water, environment);
 		draw_wireframe(grass, environment);
 		draw_wireframe(boat2, environment);
+		draw_wireframe(arc_en_ciel, environment);
 	}
 	
 

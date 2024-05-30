@@ -56,6 +56,7 @@ struct scene_structure : cgp::scene_inputs_generic {
 	mesh_drawable grass;
 	mesh_drawable boat2;
 	mesh_drawable tree;
+	mesh_drawable arc_en_ciel;
 
 	std::vector<cgp::vec3> grass_positions;
 	std::vector<cgp::vec3> tree_positions;
