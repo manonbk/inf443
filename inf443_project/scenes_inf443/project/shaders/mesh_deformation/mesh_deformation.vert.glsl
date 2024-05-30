@@ -28,13 +28,16 @@ uniform float time;
 
 
 // Deformer function
+
 //  Computes the procedural deformation z = 0.05*cos( (x^2+y^2)^0.5 - 3*t );
 vec3 deformer(vec3 p0)
 {
 	float d = sqrt(p0.x*p0.x+p0.y*p0.y);
-	float omega = 20.0*d - 3.0*time;
+	float omega = 10.0*d - 3.0*time;
 
-	vec3 p = vec3(p0.x, p0.y, 0.05*cos(omega) );
+	float amplitude = 0.05 * (1.0 - smoothstep(0.0, 1.0, d / 15.0));
+
+	vec3 p = vec3(p0.x, p0.y, amplitude*cos(omega) );
 
 	return p;
 }
@@ -44,11 +47,13 @@ vec3 deformer(vec3 p0)
 vec3 deformer_normal(vec3 p0)
 {
 	float d = sqrt(p0.x*p0.x+p0.y*p0.y);
-	float omega = 20.0*d - 3.0*time;
+	float omega = 10.0*d - 3.0*time;
+
+	float amplitude = 0.05 * (1.0 - smoothstep(0.0, 1.0, d / 15.0));
 
 	// Compute exact normals after deformation
-	vec3 dpdx = vec3(1.0, 0.0, -20.0*p0.x/d*0.05*sin(omega) );
-	vec3 dpdy = vec3(0.0, 1.0, -20.0*p0.y/d*0.05*sin(omega) );
+	vec3 dpdx = vec3(1.0, 0.0, -20.0*p0.x/d*amplitude*sin(omega) );
+	vec3 dpdy = vec3(0.0, 1.0, -20.0*p0.y/d*amplitude*sin(omega) );
 	vec3 n = normalize(cross(dpdx,dpdy));
 
 	return n;
