@@ -60,7 +60,7 @@ struct scene_structure : cgp::scene_inputs_generic {
 	std::vector<cgp::vec3> grass_positions;
 	std::vector<cgp::vec3> tree_positions;
 
-	int nb_grass = 500;
+	int nb_grass = 1000;
 	int nb_tree = 100;
 
 
