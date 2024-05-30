@@ -65,6 +65,7 @@ void main()
 	vec3 p_deformed = deformer(vertex_position);
 	vec3 n_deformed = deformer_normal(vertex_position);
 
+
 	// The position of the vertex in the world space
 	vec4 position = model * vec4(p_deformed, 1.0);
 
