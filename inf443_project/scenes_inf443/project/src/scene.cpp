@@ -1,5 +1,7 @@
 #include "scene.hpp"
 #include "terrain.hpp"
+#include "interpolation.hpp"
+
 
 
 using namespace cgp;
@@ -57,13 +59,6 @@ void scene_structure::initialize()
 	tree.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2.0f);
 	tree.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/palm_tree/palm_tree.jpg", GL_REPEAT, GL_REPEAT);
 
-	boat.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/Yatch_OBJ/Yatch.obj"));
-	boat.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/Yatch_OBJ/Yatch_DIF.png", GL_REPEAT, GL_REPEAT);
-	
-	boat.model.scaling = 0.2f;
-	boat.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, 3.14f / 2.0);
-	boat.model.translation = vec3(2.0f,2.0f,0);
-
 
 	// Create two quads to display the blades of grass as impostors
 	mesh quad = mesh_primitive_quadrangle({ -0.5f,0.0f,0.0f }, { 0.5f,0.0f,0.0f }, { 0.5f,0.0f,1.0f }, { -0.5f,0.0f,1.0f });
@@ -90,6 +85,28 @@ void scene_structure::initialize()
 	tree.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, 3.14f / 2.0);
 	tree_positions = Terrain::generate_positions_on_terrain(nb_tree, 3.0f*L, 0.0f);
 
+	// Definition of the initial data
+	//--------------------------------------//
+
+	// Key 3D positions
+	numarray<vec3> key_positions = 
+	{ {10,4,0}, {11,4,0}, {11,5,0}, {12,5,0}, {12,6,0}, {11,6,0}, {10,5,0}, {9,5,0}, {9,3,0},{10,4,0},{11,4,0}, {11,4,0} };
+
+	// Key times (time at which the position must pass in the corresponding position)
+	numarray<float> key_times = 
+	{ 0.0f, 1.0f, 2.0f, 2.5f, 3.0f, 3.5f, 3.75f, 4.5f, 5.0f, 6.0f, 7.0f, 8.0f };
+
+	// Initialize the helping structure to display/interact with these positions
+	keyframe.initialize(key_positions, key_times);
+
+
+	// Set timer bounds
+	// The timer must span a time interval on which the interpolation can be conducted
+	// By default, set the minimal time to be key_times[1], and the maximal time to be key_time[N-2] (enables cubic interpolation)
+	int N = key_times.size();
+	timer.t_min = key_times[1];
+	timer.t_max = key_times[N - 2];
+	timer.t = timer.t_min;
 }
 
 
@@ -108,6 +125,7 @@ void scene_structure::display_frame()
 
 	// Update time
 	timer.update();
+	float t = timer.t;
 
 	// Send current time as a uniform value to the shader
 	environment.uniform_generic.uniform_float["time"] = timer.t;
@@ -117,11 +135,11 @@ void scene_structure::display_frame()
 		draw(global_frame, environment);
 
 	//Bateau fixe suit la surface de l'eau
-	vec2 p0 = {2.0f,2.0f};
-	float d = sqrt(p0.x*p0.x+p0.y*p0.y);
-	float omega = 20.0*d - 3.0*timer.t;
-	vec3 p = vec3(p0.x, p0.y, 0.05*cos(omega));
-	boat.model.translation = p;
+	//vec2 p0 = {2.0f,2.0f};
+	//float d = sqrt(p0.x*p0.x+p0.y*p0.y);
+	//float omega = 20.0*d - 3.0*timer.t;
+	//vec3 p = vec3(p0.x, p0.y, 0.05*cos(omega));
+	//boat.model.translation = p;
 	
 
 	// Draw all the shapes
@@ -131,7 +149,7 @@ void scene_structure::display_frame()
 	draw(terrain4, environment);
 	draw(water, environment);
 	draw(tree, environment);
-	draw(boat,environment);
+	
 
 	for (int i = 0; i < nb_grass; i++) {
 		grass.model.translation = grass_positions[i];
@@ -143,6 +161,20 @@ void scene_structure::display_frame()
 		draw(tree, environment);
 	}
 
+	//INTERPOLATION
+	// clear trajectory when the timer restart
+	if (t < timer.t_min + 0.1f)
+		keyframe.trajectory.clear();
+
+	// Display the key positions and lines b/w positions
+	keyframe.display_key_positions(environment);
+
+	// Compute the interpolated position
+	//  This is this function that you need to complete
+	vec3 p = interpolation(t, keyframe.key_positions, keyframe.key_times);
+
+	// Display the interpolated position (and its trajectory)
+	keyframe.display_current_position(p,t, environment);
 
 	// Animate the second cube in the water
 	/*cube2.model.translation = {-1.0f, 6.0f + 0.1 * sin(0.5f * timer.t), -0.8f + 0.1f * cos(0.5f * timer.t)};
@@ -171,12 +203,20 @@ void scene_structure::display_gui()
 	ImGui::Checkbox("Frame", &gui.display_frame);
 	ImGui::Checkbox("Wireframe", &gui.display_wireframe);
 
+	ImGui::SliderFloat("Time", &timer.t, timer.t_min, timer.t_max);
+	ImGui::SliderFloat("Time scale", &timer.scale, 0.0f, 2.0f);
+
+	// Display the GUI associated to the key position
+	keyframe.display_gui();
 }
 
 void scene_structure::mouse_move_event()
 {
 	if (!inputs.keyboard.shift)
 		camera_control.action_mouse_move(environment.camera_view);
+	
+	// Handle the picking (displacement of the position using mouse drag)
+	keyframe.update_picking(inputs, camera_control.camera_model, camera_projection);
 }
 void scene_structure::mouse_click_event()
 {

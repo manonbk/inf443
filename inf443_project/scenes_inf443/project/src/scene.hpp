@@ -4,6 +4,7 @@
 #include "cgp/cgp.hpp"
 #include "environment.hpp"
 #include "terrain.hpp"
+#include "key_positions_structure.hpp"
 
 // This definitions allow to use the structures: mesh, mesh_drawable, etc. without mentionning explicitly cgp::
 using cgp::mesh;
@@ -38,7 +39,11 @@ struct scene_structure : cgp::scene_inputs_generic {
 	// Elements and shapes of the scene
 	// ****************************** //
 
-	timer_basic timer;
+	// A helper structure used to store and display the key positions/time
+	keyframe_structure keyframe;
+
+	// Timer used for the interpolation of the position
+	cgp::timer_interval timer;
 
 	cgp::skybox_drawable skybox;
 
