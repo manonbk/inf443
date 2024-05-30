@@ -46,12 +46,26 @@ void scene_structure::initialize()
 
 	float sea_w = 20.0;
 	float sea_z = -5.0f;
-	water.initialize_data_on_gpu(mesh_primitive_grid({ -sea_w,-sea_w,sea_z }, { sea_w,-sea_w,sea_z }, { sea_w,sea_w,sea_z }, { -sea_w,sea_w,sea_z }));
+	int nx = 100;  // Number of divisions along x-axis
+	int ny = 100;  // Number of divisions along y-axis
+
+	mesh water_mesh = mesh_primitive_grid({ -sea_w, -sea_w, sea_z },
+		{ sea_w, -sea_w, sea_z },
+		{ sea_w, sea_w, sea_z },
+		{ -sea_w, sea_w, sea_z },
+		nx, ny);
+
+	for (auto& uv : water_mesh.uv) {
+		uv *= 10.0f;
+	}
+
+	water.initialize_data_on_gpu(water_mesh);
 	//water.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sea.png");
-	water.material.color = { 0, 0, 1.0f };
+	water.material.color = { 169.0f / 255.0f, 201.0f / 255.0f, 246.0f / 255.0f };
 	water.material.alpha = 0.2f;
-	water.material.texture_settings.two_sided=true;
+	water.material.texture_settings.two_sided = true;
 	water.shader.load(project::path + "shaders/mesh_deformation/mesh_deformation.vert.glsl", project::path + "shaders/mesh_deformation/mesh_deformation.frag.glsl");
+	water.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sea.png", GL_REPEAT, GL_REPEAT);
 
 	tree.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/palm_tree/palm_tree.obj"));
 	tree.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2.0f);
