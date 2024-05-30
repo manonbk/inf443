@@ -32,29 +32,46 @@ uniform float time;
 //  Computes the procedural deformation z = 0.05*cos( (x^2+y^2)^0.5 - 3*t );
 vec3 deformer(vec3 p0)
 {
-	float d = sqrt(p0.x*p0.x+p0.y*p0.y);
-	float omega = 10.0*d - 3.0*time;
+	float d1 = sqrt(p0.x*p0.x+p0.y*p0.y);
+	float omega1 = 25.0*d1 - 3.0*time;
+	//float d2 = sqrt((p0.x - 4.8f) * (p0.x - 4.8f) + (p0.y - 4.8f) * (p0.y - 4.8f));
+	//float omega2 = 10.0*d2 - 3.0*time;
+	//float offset_3 = 5.0f;
+	//float d3 = sqrt((p0.x - offset_3) * (p0.x - offset_3) + (p0.y + offset_3) * (p0.y + offset_3));
+	//float omega3 = 10.0*d3 - 3.0*time;
 
-	float amplitude = 0.05 * (1.0 - smoothstep(0.0, 1.0, d / 15.0));
+	float amplitude = 0.05 * (1.0 - smoothstep(0.0, 1.0, d1 / 15.0));
 
-	vec3 p = vec3(p0.x, p0.y, amplitude*cos(omega) );
+	vec3 p1 = vec3(p0.x, p0.y, amplitude*cos(omega1) );
+	//vec3 p2 = vec3(p0.x, p0.y, amplitude*cos(omega2) );
+	//vec3 p3 = vec3(p0.x, p0.y, amplitude*cos(omega3) );
 
-	return p;
+	return p1;
 }
 
 // Deformer function for the normal
 //  Compute the partial derivative of the function
 vec3 deformer_normal(vec3 p0)
 {
-	float d = sqrt(p0.x*p0.x+p0.y*p0.y);
-	float omega = 10.0*d - 3.0*time;
+	float d1 = sqrt(p0.x*p0.x+p0.y*p0.y);
+	float omega1 = 10.0*d1 - 3.0*time;
+	
+	//float d2 = sqrt((p0.x - 4.8f) * (p0.x - 4.8f) + (p0.y - 4.8f) * (p0.y - 4.8f));
+	//float omega2 = 15.0*d2 - 1.0*time;
+	//float offset_3 = 5.0f;
+	//float d3 = sqrt((p0.x - offset_3) * (p0.x - offset_3) + (p0.y + offset_3) * (p0.y + offset_3));
+	//float omega3 = 20.0*d3 - 5.0*time;
 
-	float amplitude = 0.05 * (1.0 - smoothstep(0.0, 1.0, d / 15.0));
+	float amplitude = 0.05 * (1.0 - smoothstep(0.0, 1.0, d1 / 15.0));
 
 	// Compute exact normals after deformation
-	vec3 dpdx = vec3(1.0, 0.0, -20.0*p0.x/d*amplitude*sin(omega) );
-	vec3 dpdy = vec3(0.0, 1.0, -20.0*p0.y/d*amplitude*sin(omega) );
-	vec3 n = normalize(cross(dpdx,dpdy));
+	vec3 dpdx1 = vec3(1.0, 0.0, -10.0*p0.x/d1*amplitude*sin(omega1) );
+	vec3 dpdy1 = vec3(0.0, 1.0, -10.0*p0.y/d1*amplitude*sin(omega1) );
+	//vec3 dpdx2 = vec3(1.0, 0.0, -15.0*p0.x/d2*amplitude*sin(omega2) );
+	//vec3 dpdy2 = vec3(0.0, 1.0, -15.0*p0.y/d2*amplitude*sin(omega2) );
+	//vec3 dpdx3 = vec3(1.0, 0.0, -20.0*p0.x/d3*amplitude*sin(omega3) );
+	//vec3 dpdy3 = vec3(0.0, 1.0, -20.0*p0.y/d3*amplitude*sin(omega3) );
+	vec3 n = normalize(cross(dpdx1,dpdy1));
 
 	return n;
 }

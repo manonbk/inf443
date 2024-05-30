@@ -61,7 +61,7 @@ void scene_structure::initialize()
 		nx, ny);
 
 	for (auto& uv : water_mesh.uv) {
-		uv *= 10.0f;
+		uv *= 100.0f;
 	}
 
 	water.initialize_data_on_gpu(water_mesh);
